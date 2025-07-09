@@ -32,7 +32,7 @@
 	memory@48000000 {
 		device_type = "memory";
 		/* first 128MB is reserved for secure area. */
-		reg = <0x0 0x48000000 0x0 0x58000000>;
+		reg = <0x0 0x48000000 0x0 0x38000000>;
 	};
 
 	reserved-memory {
@@ -448,7 +448,7 @@
 
 		reset-assert-us = <10000>;
 		reset-deassert-us = <10000>;
-		reset-gpios = <&pinctrl RZG2L_GPIO(1, 1) GPIO_ACTIVE_LOW>;
+		
 	};
 };
 

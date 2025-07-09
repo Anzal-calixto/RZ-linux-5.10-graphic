@@ -18,9 +18,15 @@
 	aliases {
                 serial0 = &scif0;
 		serial5 = &sci0;
+		serial3 = &scif3;
 		ethernet0 = &eth0;	
 		rtc0 = &da9062_rtc;
 		i2c3 = &i2c3;
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		i2c2 = &i2c2;
+		spi0 = &spi0;
+		
 	};
 
 	chosen {
@@ -31,7 +37,7 @@
 	memory@48000000 {
 		device_type = "memory";
 		/* first 128MB is reserved for secure area. */
-		reg = <0x0 0x48000000 0x0 0x58000000>;
+		reg = <0x0 0x48000000 0x0 0x78000000>;
 	};
 
 	reserved-memory {
@@ -188,8 +194,8 @@
         };
 
 	sci0_pins: sci0 {
-		pinmux = <RZG2L_PORT_PINMUX(47, 1, 1)>,	/* TxD */
-			 <RZG2L_PORT_PINMUX(47, 0, 1)>;	/* RxD */
+		pinmux = <RZG2L_PORT_PINMUX(2, 0, 5)>,	/* TxD */
+			 <RZG2L_PORT_PINMUX(2, 1, 5)>;	/* RxD */
 			 /* <RZG2L_PORT_PINMUX(47, 2, 0)>; */	/* GPIO - RS485 Output Enable */
 	};
 
@@ -198,6 +204,10 @@
 			 <RZG2L_PORT_PINMUX(38, 1, 1)>;	/* RxD */
 	};
 
+        scif3_pins: scif3 {
+		pinmux = <RZG2L_PORT_PINMUX(0, 0, 5)>,	/* TxD */
+			 <RZG2L_PORT_PINMUX(0, 1, 5)>;	/* RxD */
+	};
 	can1_pins: can1 {
 		pinmux = <RZG2L_PORT_PINMUX(40, 0, 3)>, /* CAN TX */
 			 <RZG2L_PORT_PINMUX(40, 1, 3)>; /* CAN RX */
@@ -212,6 +222,17 @@
 		pins = "RIIC1_SDA", "RIIC1_SCL";
 		input-enable;
 	};
+	i2c2_pins: i2c2 {
+		pinmux = <RZG2L_PORT_PINMUX(3, 0, 2)>, /* SDA */
+			 <RZG2L_PORT_PINMUX(3, 1, 2)>; /* SCL */
+	};
+	
+	spi0_pins: spi0 {
+		pinmux = <RZG2L_PORT_PINMUX(43, 1, 1)>, /* MOSI */
+			 <RZG2L_PORT_PINMUX(43, 2, 1)>; /* MISO */
+	
+	};
+
 	i2c3_pins: i2c3 {
 		pinmux = <RZG2L_PORT_PINMUX(18, 0, 3)>, /* SDA */
 			 <RZG2L_PORT_PINMUX(18, 1, 3)>; /* SCL */
@@ -307,14 +328,14 @@
 		};
 
 		sd0_emmc_ctrl {
-			pins = "SD0_CLK", "SD0_CMD";
+			pins = "SD0_CLK", "SD0_CMD","SD0_RST#";
 			power-source = <1800>;
 		};
 
-		sd0_emmc_rst {
+		/*sd0_emmc_rst {
 			pins = "SD0_RST#";
 			power-source = <1800>;
-		};
+		};*/
 	};
 
 
@@ -344,6 +365,8 @@
         status = "okay";
 };
 
+
+
 &scif0 {
 	pinctrl-0 = <&scif0_pins>;
 	pinctrl-names = "default";
@@ -352,6 +375,11 @@
 
 &sci0 {
 	pinctrl-0 = <&sci0_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+&scif3 {
+	pinctrl-0 = <&scif3_pins>;
 	pinctrl-names = "default";
 	status = "okay";
 };
@@ -365,6 +393,22 @@
 	channel1 {
 		status = "okay";
 	};
+};
+
+
+&spi0 {
+	pinctrl-0 = <&spi0_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+	dmas = <&dmac 0x2e99>,
+	       <&dmac 0x2e9a>;
+	dma-names = "tx", "rx";
+
+    spidev@0{
+        compatible = "rohm,dh2228fv"; // (Using fake name to use spidev driver)
+        reg = <0>;
+        spi-max-frequency = <1000000>;
+    };
 };
 
 
@@ -549,7 +593,7 @@
 
 	status = "okay";
 
-	ov5645: camera@3c {
+	/*ov5645: camera@3c {
 		compatible = "ovti,ov5645";
 		reg = <0x3c>;
 		clock-names = "xclk";
@@ -566,7 +610,14 @@
 				remote-endpoint = <&csi2_in>;
 			};
 		};
-	};
+	};*/
+};
+
+&i2c2 {
+	pinctrl-0 = <&i2c2_pins>;
+	pinctrl-names = "default";
+
+	status = "okay";
 };
 
 &adc {
@@ -697,9 +748,9 @@
 };
 
 &csi2 {
-	status = "okay";
+	status = "disabled";
 
-	ports {
+	/*ports {
 		port {
 			csi2_in: endpoint {
 				clock-lanes = <0>;
@@ -707,7 +758,7 @@
 				remote-endpoint = <&ov5645_to_csi>;
 			};
 		};
-	};
+	};*/
 };
 &cru {
 	status = "okay";
@@ -744,7 +795,7 @@
 	};
 };
 
-&ov5645 {
+/*&ov5645 {
 	enable-gpios = <&pinctrl RZG2L_GPIO(42, 3) GPIO_ACTIVE_HIGH>;
 	reset-gpios = <&pinctrl RZG2L_GPIO(42, 2) GPIO_ACTIVE_LOW>;
-};
+};*/

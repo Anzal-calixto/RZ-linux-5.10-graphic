@@ -17,8 +17,8 @@
 
 	aliases {
                 serial0 = &scif0;
-		serial5 = &sci0;
-		ethernet0 = &eth0;	
+		serial4 = &scif4;
+		ethernet0 = &eth0;
 		rtc0 = &da9062_rtc;
 		i2c3 = &i2c3;
 	};
@@ -31,7 +31,7 @@
 	memory@48000000 {
 		device_type = "memory";
 		/* first 128MB is reserved for secure area. */
-		reg = <0x0 0x48000000 0x0 0x58000000>;
+		reg = <0x0 0x48000000 0x0 0x38000000>;
 	};
 
 	reserved-memory {
@@ -177,6 +177,17 @@
                 gpios = <&pinctrl RZG2L_GPIO(4, 1) GPIO_ACTIVE_HIGH>;
                 default-on;
         };
+        leds {
+    		compatible = "gpio-leds";  // Uses the GPIO LEDs driver
+
+	    led-0 {
+		gpios = <&pinctrl RZG2L_GPIO(27, 0) GPIO_ACTIVE_HIGH>;  
+		linux,default-trigger = "heartbeat";  // Blinks when CPU is running
+		default-state = "on";  // LED turns on at boot
+		
+	    };
+	};
+
 
 };
 
@@ -187,9 +198,9 @@
                 pinmux = <RZG2L_PORT_PINMUX(19, 1, 2)>; /* Channel B */
         };
 
-	sci0_pins: sci0 {
-		pinmux = <RZG2L_PORT_PINMUX(47, 1, 1)>,	/* TxD */
-			 <RZG2L_PORT_PINMUX(47, 0, 1)>;	/* RxD */
+	scif4_pins: scif4 {
+		pinmux = <RZG2L_PORT_PINMUX(2, 0, 5)>,	/* TxD */
+			 <RZG2L_PORT_PINMUX(2, 1, 5)>;	/* RxD */
 			 /* <RZG2L_PORT_PINMUX(47, 2, 0)>; */	/* GPIO - RS485 Output Enable */
 	};
 
@@ -307,14 +318,14 @@
 		};
 
 		sd0_emmc_ctrl {
-			pins = "SD0_CLK", "SD0_CMD";
+			pins = "SD0_CLK", "SD0_CMD","SD0_RST#";
 			power-source = <1800>;
 		};
 
-		sd0_emmc_rst {
+		/*sd0_emmc_rst {
 			pins = "SD0_RST#";
 			power-source = <1800>;
-		};
+		};*/
 	};
 
 
@@ -344,14 +355,16 @@
         status = "okay";
 };
 
+
+
 &scif0 {
 	pinctrl-0 = <&scif0_pins>;
 	pinctrl-names = "default";
 	status = "okay";
 };
 
-&sci0 {
-	pinctrl-0 = <&sci0_pins>;
+&scif4 {
+	pinctrl-0 = <&scif4_pins>;
 	pinctrl-names = "default";
 	status = "okay";
 };
@@ -440,7 +453,7 @@
 	vmmc-supply = <&reg_3p3v>;
 	vqmmc-supply = <&reg_1p8v>;
 	bus-width = <8>;
-	mmc-hs200-1_8v;
+	//mmc-hs200-1_8v;
 	non-removable;
 	fixed-emmc-driver-type = <1>;
 	status = "okay";
@@ -537,7 +550,6 @@
 				regulator-max-microvolt = <2500000>;
 				regulator-always-on;
 			};
-
 		};
 
 	};
@@ -712,7 +724,6 @@
 &cru {
 	status = "okay";
 };
-
 &dsi0 {
 	status = "okay";
 	#address-cells = <1>;
